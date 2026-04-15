@@ -12,11 +12,6 @@ jobs:
   build-apk:
     # 运行环境：Ubuntu最新版（Flutter构建最优环境）
     runs-on: ubuntu-latest
-    # 开启缓存，加速后续构建
-    cache:
-      paths:
-        - ${{ github.workspace }}/.pub-cache
-        - ${{ github.workspace }}/flutter-sdk
 
     # 任务步骤（从环境配置到编译APK全流程）
     steps:
@@ -30,14 +25,14 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle  # 缓存Gradle依赖
+          cache: gradle  # 缓存Gradle依赖（正确的缓存写法）
 
       # 步骤3：安装Flutter SDK（稳定版，自动缓存）
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 'stable'  # 使用Flutter稳定版
-          cache: true                # 缓存Flutter，下次构建更快
+          cache: true                # 缓存Flutter，下次构建更快（正确的缓存写法）
 
       # 步骤4：接受Android SDK许可证（避免构建时权限报错）
       - name: Accept Android licenses
