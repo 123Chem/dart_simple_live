@@ -4,56 +4,56 @@ name: Build Flutter APK
 # 触发条件：1.推送到master分支 2.手动触发（优先用手动）
 on:
   push:
-    branches: [ master ]  # 匹配你的仓库默认分支
-  workflow_dispatch: {}   # 核心：开启手动触发，解决自动触发没反应的问题
+    branches: [ master ]
+  workflow_dispatch: {}
 
 # 定义执行的任务
 jobs:
   build-apk:
-    # 运行环境：Ubuntu最新版（Flutter构建最优环境）
     runs-on: ubuntu-latest
 
-    # 任务步骤（从环境配置到编译APK全流程）
     steps:
-      # 步骤1：检出仓库代码（让Actions能访问你的项目）
+      # 步骤1：检出仓库代码
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 步骤2：配置Java环境（Android构建必须，17版本适配最新Flutter）
+      # 步骤2：配置Java环境
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle  # 缓存Gradle依赖（正确的缓存写法）
+          cache: gradle
 
-      # 步骤3：安装Flutter SDK（稳定版，自动缓存）
+      # 步骤3：安装Flutter SDK（指定具体版本，解决版本检测失败）
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'  # 使用Flutter稳定版
-          cache: true                # 缓存Flutter，下次构建更快（正确的缓存写法）
+          # 替换为具体稳定版号，避免版本检测报错
+          flutter-version: '3.22.0'  
+          cache: true
 
-      # 步骤4：接受Android SDK许可证（避免构建时权限报错）
+      # 步骤4：手动更新Flutter并检查版本（兜底，确保SDK可用）
+      - name: Upgrade Flutter & check version
+        run: |
+          flutter upgrade
+          flutter --version
+
+      # 步骤5：接受Android SDK许可证
       - name: Accept Android licenses
         run: echo "y" | flutter doctor --android-licenses
 
-      # 步骤5：安装Flutter项目依赖（pub get）
+      # 步骤6：安装项目依赖
       - name: Install Flutter dependencies
         run: flutter pub get
 
-      # 步骤6：（可选）检查项目环境，方便排查问题
-      - name: Flutter doctor check
-        run: flutter doctor -v
-
-      # 步骤7：构建Release版APK（核心步骤）
+      # 步骤7：构建Release版APK
       - name: Build Release APK
         run: flutter build apk --release --no-tree-shake-icons
-        # 说明：--no-tree-shake-icons 避免图标优化导致的异常，新手必加
 
-      # 步骤8：上传APK产物（方便下载）
+      # 步骤8：上传APK产物
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dart-simple-live-apk  # 产物名称，辨识度更高
-          path: build/app/outputs/flutter-apk/app-release.apk  # APK固定路径
+          name: dart-simple-live-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
